@@ -25,5 +25,12 @@ namespace app_curso_claude.Controllers
             var cuenta = _repository.Add(request.Titular.Trim(), request.SaldoInicial);
             return StatusCode(StatusCodes.Status201Created, cuenta);
         }
+
+        // POST /Cuenta/Baja/{id}
+        [HttpPost]
+        public IActionResult Baja(int id)
+        {
+            return _repository.Remove(id) ? NoContent() : NotFound();
+        }
     }
 }

@@ -25,5 +25,13 @@ namespace app_curso_claude.Services
                 return cuenta;
             }
         }
+
+        public bool Remove(int id)
+        {
+            lock (_lock)
+            {
+                return _cuentas.RemoveAll(c => c.Id == id) > 0;
+            }
+        }
     }
 }
