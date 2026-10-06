@@ -1,7 +1,11 @@
-var builder = WebApplication.CreateBuilder(args);
+using app_curso_claude.Services;
+
+var builder =WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<IUsuarioRepository, InMemoryUsuarioRepository>();
+builder.Services.AddSingleton<ICuentaRepository, InMemoryCuentaRepository>();
 
 var app = builder.Build();
 
@@ -27,3 +31,6 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+// Expone Program para que los tests de integración puedan usar WebApplicationFactory<Program>.
+public partial class Program { }

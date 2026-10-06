@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>app_curso_claude</RootNamespace>
+    <!-- El proyecto de tests vive en una subcarpeta; evita que este proyecto compile sus archivos. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);tests/**</DefaultItemExcludes>
   </PropertyGroup>
 
 </Project>
