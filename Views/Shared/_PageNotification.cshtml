@@ -1,0 +1,34 @@
+﻿@*
+    Renders the page notification declared by the current view:
+
+        ViewData["NotificationMessage"] = "Showing 3 addresses.";
+        ViewData["NotificationType"] = "info"; // info | success | warning | danger
+
+    Nothing is rendered when no message is declared. The toast is shown on page load by wwwroot/js/site.js.
+*@
+@{
+    var message = ViewData["NotificationMessage"] as string;
+    var requestedType = ViewData["NotificationType"] as string;
+
+    // Only allowlisted values may reach the class attribute; anything else falls back to "info".
+    var type = requestedType switch
+    {
+        "info" or "success" or "warning" or "danger" => requestedType,
+        _ => "info"
+    };
+
+    // text-bg-success and text-bg-danger use white text, so the default dark close icon needs the white variant.
+    var closeButtonClass = type is "success" or "danger" ? "btn-close btn-close-white" : "btn-close";
+}
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div class="toast text-bg-@type border-0" role="status" aria-live="polite" aria-atomic="true" data-bs-delay="5000">
+            <div class="d-flex">
+                <div class="toast-body">@message</div>
+                <button type="button" class="@closeButtonClass me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+}
+\r
