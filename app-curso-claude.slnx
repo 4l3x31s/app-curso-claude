@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="app-curso-claude.csproj" />
+  <Project Path="tests/app-curso-claude.Tests/app-curso-claude.Tests.csproj" />
 </Solution>
