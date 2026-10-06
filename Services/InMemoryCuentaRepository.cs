@@ -25,5 +25,13 @@ namespace app_curso_claude.Services
                 return cuenta;
             }
         }
+
+        public Cuenta? GetById(int id)
+        {
+            lock (_lock)
+            {
+                return _cuentas.FirstOrDefault(c => c.Id == id);
+            }
+        }
     }
 }

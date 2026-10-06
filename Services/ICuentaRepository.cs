@@ -5,5 +5,7 @@ namespace app_curso_claude.Services
     public interface ICuentaRepository
     {
         Cuenta Add(string titular, decimal saldoInicial);
+
+        Cuenta? GetById(int id);
     }
 }

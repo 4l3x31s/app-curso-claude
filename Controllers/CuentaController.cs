@@ -25,5 +25,18 @@ namespace app_curso_claude.Controllers
             var cuenta = _repository.Add(request.Titular.Trim(), request.SaldoInicial);
             return StatusCode(StatusCodes.Status201Created, cuenta);
         }
+
+        // GET /Cuenta/Consulta/{id}
+        [HttpGet]
+        public IActionResult Consulta(int id)
+        {
+            var cuenta = _repository.GetById(id);
+            if (cuenta is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(cuenta);
+        }
     }
 }
