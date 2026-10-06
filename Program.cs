@@ -25,6 +25,24 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+// "dotnet run -- seed" fills the database with sample data and exits without starting the web server.
+if (args.Length > 0 && args[0] == "seed")
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var result = await DbSeeder.SeedAsync(context);
+
+        app.Logger.LogInformation(
+            "Seed completed. Rows inserted: {Customers} customers, {Products} products, {Purchases} purchases.",
+            result.Customers, result.Products, result.Purchases);
+    }
+
+    // Disposing the host flushes the console logger before the process exits.
+    await app.DisposeAsync();
+    return;
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
