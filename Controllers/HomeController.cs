@@ -10,12 +10,12 @@ namespace app_curso_claude.Controllers
         {
             return View();
         }
-
+        //TODO: se debe modificar este codigo 
         public IActionResult Privacy()
         {
             return View();
         }
-
+        //TODO: prueba de agente
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
