@@ -1,0 +1,38 @@
+@model IReadOnlyList<AddressViewModel>
+@{
+    ViewData["Title"] = "Addresses";
+    ViewData["NotificationMessage"] = Model.Count switch
+    {
+        0 => "No addresses to show.",
+        1 => "Showing 1 address.",
+        _ => $"Showing {Model.Count} addresses."
+    };
+    ViewData["NotificationType"] = "info";
+}
+
+<h1>Addresses</h1>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">There are no addresses to show yet.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4 mt-1">
+        @foreach (var address in Model)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h5">@address.Label</h2>
+                        <address class="mb-0">
+                            @address.Street<br />
+                            @address.City<br />
+                            @address.Country
+                        </address>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
