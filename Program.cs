@@ -1,7 +1,27 @@
+using app_curso_claude.Data;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+string RequiredSetting(string key) =>
+    builder.Configuration[key]
+    ?? throw new InvalidOperationException($"Configuration value '{key}' not found.");
+
+var connectionString = new SqlConnectionStringBuilder
+{
+    DataSource = $"{RequiredSetting("HostDB")},{RequiredSetting("PortDB")}",
+    InitialCatalog = RequiredSetting("NameDB"),
+    UserID = RequiredSetting("UserDB"),
+    Password = RequiredSetting("PassDB"),
+    TrustServerCertificate = builder.Configuration.GetValue<bool>("TrustServerCertificateDB")
+}.ConnectionString;
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 
