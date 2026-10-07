@@ -18,5 +18,11 @@ namespace app_curso_claude.Data.Repositories
         /// </summary>
         /// <param name="purchase">Purchase to save; its customer and product are given by their ids.</param>
         Task<int> AddAsync(Purchase purchase);
+
+        /// <summary>
+        /// Returns the most recent purchases of all products, newest first, each with its customer and product loaded.
+        /// </summary>
+        /// <param name="count">Maximum number of purchases to return; zero or less returns none.</param>
+        Task<IReadOnlyList<Purchase>> GetLatestAsync(int count);
     }
 }

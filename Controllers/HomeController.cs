@@ -1,14 +1,15 @@
 using app_curso_claude.Models;
+using app_curso_claude.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace app_curso_claude.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(SummaryService summary) : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            return View(await summary.GetAsync());
         }
         //TODO: se debe modificar este codigo 
         public IActionResult Privacy()

@@ -32,6 +32,65 @@ namespace app_curso_claude.Tests.Pages
             Assert.Contains("SKU-00001", body);
         }
 
+        [Fact]
+        public async Task Get_Home_ShowsTheThreeSummaryCards()
+        {
+            var body = await GetBodyAsync("/");
+
+            Assert.Contains("data-summary=\"active-products\"", body);
+            Assert.Contains("data-summary=\"units-in-stock\"", body);
+            Assert.Contains("data-summary=\"inventory-value\"", body);
+            Assert.Contains("Active products", body);
+            Assert.Contains("Units in stock", body);
+            Assert.Contains("Inventory value", body);
+        }
+
+        [Fact]
+        public async Task Get_Home_KeepsTheTwoNavigationCards()
+        {
+            var body = await GetBodyAsync("/");
+
+            Assert.Contains("View contact details", body);
+            Assert.Contains("View addresses", body);
+        }
+
+        [Fact]
+        public async Task Get_Home_ListsTheLatestPurchasesNewestFirstWithoutContactData()
+        {
+            using var scope = factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var latest = await context.Purchases
+                .OrderByDescending(p => p.PurchasedAt)
+                .ThenByDescending(p => p.Id)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Customer.FirstName,
+                    p.Customer.LastName,
+                    p.Customer.Email,
+                    p.Customer.Phone,
+                    p.Customer.Address
+                })
+                .Take(5)
+                .ToListAsync();
+            Assert.NotEmpty(latest);
+
+            var body = WebUtility.HtmlDecode(await GetBodyAsync("/"));
+
+            var positions = latest
+                .Select(p => body.IndexOf($"data-purchase-id=\"{p.Id}\"", StringComparison.Ordinal))
+                .ToList();
+            Assert.DoesNotContain(-1, positions);
+            Assert.Equal(positions.Order(), positions);
+            Assert.All(latest, p =>
+            {
+                Assert.Contains($"{p.FirstName} {p.LastName}", body);
+                Assert.DoesNotContain(p.Email, body);
+                Assert.DoesNotContain(p.Phone, body);
+                Assert.DoesNotContain(p.Address, body);
+            });
+        }
+
         [Theory]
         [InlineData("/")]
         [InlineData("/Products")]

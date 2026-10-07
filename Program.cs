@@ -34,6 +34,7 @@ builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<PurchaseService>();
+builder.Services.AddScoped<SummaryService>();
 
 var app = builder.Build();
 

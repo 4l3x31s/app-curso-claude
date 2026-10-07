@@ -48,6 +48,22 @@ namespace app_curso_claude.Tests.Fakes
             return Task.FromResult<IReadOnlyList<Purchase>>(purchases);
         }
 
+        public Task<IReadOnlyList<Purchase>> GetLatestAsync(int count)
+        {
+            var purchases = _purchases
+                .OrderByDescending(p => p.PurchasedAt)
+                .ThenByDescending(p => p.Id)
+                .Take(Math.Max(count, 0))
+                .ToList();
+
+            foreach (var purchase in purchases)
+            {
+                purchase.Customer = customers.First(c => c.Id == purchase.CustomerId);
+            }
+
+            return Task.FromResult<IReadOnlyList<Purchase>>(purchases);
+        }
+
         public async Task<int> AddAsync(Purchase purchase)
         {
             await Task.Yield();

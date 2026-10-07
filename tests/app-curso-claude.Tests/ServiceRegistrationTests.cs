@@ -64,6 +64,14 @@ namespace app_curso_claude.Tests
         }
 
         [Fact]
+        public void Services_SummaryService_ResolvesInsideAScope()
+        {
+            using var scope = factory.Services.CreateScope();
+
+            Assert.NotNull(scope.ServiceProvider.GetRequiredService<SummaryService>());
+        }
+
+        [Fact]
         public void Services_TimeProvider_ResolvesToTheSystemClock()
         {
             var timeProvider = factory.Services.GetRequiredService<TimeProvider>();
