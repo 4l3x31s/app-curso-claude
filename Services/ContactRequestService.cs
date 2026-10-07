@@ -23,7 +23,7 @@ namespace app_curso_claude.Services
         /// Registers a contact request and assigns it the next folio of the current year.
         /// </summary>
         /// <param name="type">Consulta, Reclamo or Solicitud.</param>
-        /// <param name="sku">SKU the request is about; optional, but it must exist when given.</param>
+        /// <param name="sku">SKU the request is about; optional, but it must be an active product when given.</param>
         /// <param name="email">Email address to answer to.</param>
         /// <param name="message">Text of the request, 10 to 500 characters.</param>
         public async Task<ContactRequestResult> SendAsync(string? type, string? sku, string? email, string? message)
@@ -50,9 +50,17 @@ namespace app_curso_claude.Services
                 errors.Add($"Message must be between {MinMessageLength} and {MaxMessageLength} characters.");
             }
 
-            if (sku is not null && await products.GetAsync(sku) is null)
+            if (sku is not null)
             {
-                errors.Add($"No product found with SKU {sku}.");
+                var product = await products.GetAsync(sku);
+                if (product is null)
+                {
+                    errors.Add($"No product found with SKU {sku}.");
+                }
+                else if (!product.IsActive)
+                {
+                    errors.Add($"The product {sku} is inactive.");
+                }
             }
 
             if (errors.Count > 0)

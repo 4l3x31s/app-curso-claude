@@ -6,6 +6,7 @@ namespace app_curso_claude.Tests.Services
     public class ContactRequestServiceTests
     {
         private const string ExistingSku = "SKU-00001";
+        private const string InactiveSku = "SKU-00002";
         private const string ValidEmail = "ana@example.com";
         private const string ValidMessage = "I would like to know more.";
 
@@ -16,7 +17,9 @@ namespace app_curso_claude.Tests.Services
 
         public ContactRequestServiceTests()
         {
-            _service = new ContactRequestService(_requests, FakeProductRepository.WithSkus(ExistingSku), _clock, _logger);
+            var products = FakeProductRepository.WithSkus(ExistingSku);
+            products.Seed(InactiveSku, isActive: false);
+            _service = new ContactRequestService(_requests, products, _clock, _logger);
         }
 
         [Fact]
@@ -151,6 +154,14 @@ namespace app_curso_claude.Tests.Services
             var result = await _service.SendAsync("Consulta", "SKU-DOES-NOT-EXIST", ValidEmail, ValidMessage);
 
             AssertRejected(result, "No product found with SKU SKU-DOES-NOT-EXIST.");
+        }
+
+        [Fact]
+        public async Task SendAsync_InactiveSku_FailsWithTheInactiveProductError()
+        {
+            var result = await _service.SendAsync("Consulta", InactiveSku, ValidEmail, ValidMessage);
+
+            AssertRejected(result, $"The product {InactiveSku} is inactive.");
         }
 
         [Theory]
