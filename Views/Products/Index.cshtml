@@ -1,0 +1,58 @@
+@model IReadOnlyList<Product>
+@{
+    ViewData["Title"] = "Products";
+    ViewData["NotificationMessage"] = Model.Count switch
+    {
+        0 => "No products to show.",
+        1 => "Showing 1 product.",
+        _ => $"Showing {Model.Count} products."
+    };
+    ViewData["NotificationType"] = "info";
+}
+
+<h1>Products</h1>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">There are no products to show yet.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <caption class="visually-hidden">Products ordered by SKU</caption>
+            <thead>
+                <tr>
+                    <th scope="col">SKU</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Category</th>
+                    <th scope="col" class="text-end">Price</th>
+                    <th scope="col" class="text-end">Stock</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model)
+                {
+                    <tr>
+                        <td>@product.Sku</td>
+                        <td>@product.Name</td>
+                        <td>@product.Category</td>
+                        <td class="text-end">@product.Price.ToString("F2")</td>
+                        <td class="text-end">@product.Stock</td>
+                        <td>
+                            @if (product.IsActive)
+                            {
+                                <span class="badge text-bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-secondary">Inactive</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
