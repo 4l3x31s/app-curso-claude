@@ -18,6 +18,8 @@ namespace app_curso_claude.Models
 
         public DateTime CreatedAt { get; set; }
 
+        public bool IsActive { get; set; } = true;
+
         public ICollection<Purchase> Purchases { get; set; } = new List<Purchase>();
     }
 }

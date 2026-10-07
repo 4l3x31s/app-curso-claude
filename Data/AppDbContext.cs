@@ -39,6 +39,9 @@ namespace app_curso_claude.Data
                 entity.Property(p => p.Category).HasMaxLength(100);
                 entity.Property(p => p.Price).HasPrecision(18, 2);
 
+                // The database default makes the rows that existed before the column active.
+                entity.Property(p => p.IsActive).HasDefaultValue(true);
+
                 entity.HasIndex(p => p.Sku).IsUnique();
             });
 
