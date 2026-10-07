@@ -48,9 +48,9 @@ Out of scope: Home and Contact pages; in-memory repositories, `SeedData` and any
 ## Tasks
 
 - [x] T1 — Test project (web project excludes `tests/**` through `DefaultItemExcludes`, already added uncommitted), `Product.IsActive`, migration `AddProductIsActive` generated but not applied, `Services/OperationResult.cs` with unit tests. No test in this task touches the database. Route: delegated writer. Checks: `dotnet build`; `dotnet test`; the migration only adds `IsActive` (non-null, default `true`) to `Products`. Evidence: commit `7c9d652`; RED was compile error CS0234 (namespace `app_curso_claude.Services` missing); GREEN `dotnet test app-curso-claude.slnx` 6 passed, 0 failed; `dotnet build app-curso-claude.slnx` 0 warnings, 0 errors, no CS0579; migration `20261007003136_AddProductIsActive`: `Up` only adds `IsActive` (`bit`, non-null, default `true`) to `Products`, `Down` drops it. Nothing connected to the database.
-- [ ] User step — apply the migration with `dotnet ef database update`. T2 and T3 cannot go green before it.
-- [ ] T2 — Repository interfaces, EF Core repositories, `Program.cs` mark and registrations, repository tests against SQL Server: products come ordered by SKU, `GetAsync` of an unknown SKU returns `null`, purchases come newest first. Route: delegated writer. Checks: `dotnet build`; `dotnet test`.
-- [ ] T3 — Products and Purchases pages, menu links, `CLAUDE.md` structure section, smoke tests with `WebApplicationFactory<Program>`: Home, Products, Purchases and Contact answer 200 and `/Products` shows `SKU-00001`. If a test fails, the production code is fixed, not the test. Route: same writer as T2. Checks: `dotnet build`; `dotnet test`.
+- [x] User step — apply the migration with `dotnet ef database update`. T2 and T3 cannot go green before it. Evidence: applied by the user, not by an agent; observed indirectly because the repository tests that read whole `Product` rows, `IsActive` included, pass against `curso_claude`.
+- [ ] T2 — Repository interfaces, EF Core repositories, `Program.cs` mark and registrations, repository tests against SQL Server: products come ordered by SKU, `GetAsync` of an unknown SKU returns `null`, purchases come newest first. Route: delegated writer. Checks: `dotnet build`; `dotnet test`. Evidence: commit `73b6970`; RED was compile error CS0234 (namespace `app_curso_claude.Data.Repositories` missing, 5 occurrences); GREEN `dotnet test app-curso-claude.slnx` 18 passed, 0 failed (12 new: 3 product, 3 customer, 3 purchase repository tests and 3 DI registration tests). The product with two or more purchases is found by a query. Only reads ran against SQL Server.
+- [ ] T3 — Products and Purchases pages, menu links, `CLAUDE.md` structure section, smoke tests with `WebApplicationFactory<Program>`: Home, Products, Purchases and Contact answer 200 and `/Products` shows `SKU-00001`. If a test fails, the production code is fixed, not the test. Route: same writer as T2. Checks: `dotnet build`; `dotnet test`. Evidence: commits `58bb263` (pages and tests) and `9ef9bd2` (`CLAUDE.md`); RED was 10 failed, 20 passed (the new page tests got 404 and the menu links were missing); GREEN `dotnet test app-curso-claude.slnx` 30 passed, 0 failed; `dotnet build app-curso-claude.slnx` 0 warnings, 0 errors. Page tests cover the four 200 answers, `SKU-00001` on `/Products`, the menu links, and `/Purchases` with no SKU, an existing SKU (order on the page and customer name without email, phone or address), an unknown SKU and a product without purchases.
 
 ## Acceptance criteria
 
@@ -74,11 +74,17 @@ Strategy: `single-pr`. Forecast: about 500 authored lines (generated migration e
 - A first writer started on the in-memory contract and was stopped before writing anything when the user switched to SQL Server.
 - T1 done in `7c9d652`: test project `tests/app-curso-claude.Tests` (xUnit 2.9.3, `Microsoft.AspNetCore.Mvc.Testing` 10.0.12) in the solution, `Product.IsActive`, `Services/OperationResult.cs`, migration `AddProductIsActive` generated and not applied. 6 unit tests, none touches the database. `OperationResult.Fail` copies the array it receives. A model test checks the `IsActive` database default without opening a connection.
 
+- T2 done in `73b6970`: three repository interfaces, three EF Core repositories, the `Program.cs` mark with the scoped registrations and `TimeProvider.System`. `GetByProductAsync` breaks `PurchasedAt` ties by descending id. The tests share one `WebApplicationFactory<Program>` host (`AppFactory`, Development environment) through an xUnit collection.
+- T3 done in `58bb263` and `9ef9bd2`: `ProductsController`, `PurchasesController`, their `Index` views, two menu links, `CLAUDE.md` structure section. `PurchasesIndexViewModel` (namespace `app_curso_claude.Models`) is declared at the end of `Controllers/PurchasesController.cs` because `Models/` was outside the writer's edit surface; moving it to `Models/PurchasesIndexViewModel.cs` needs no other change.
+- Authored changed lines so far (generated migration excluded): T2 364, T3 357, `CLAUDE.md` 54 (28 added, 26 removed), on top of T1. Above the 400-line guide, as forecast; delivery stays `single-pr`.
+
 ## Pending and not verified
 
-- The migration `AddProductIsActive` is not applied to `curso_claude`; its SQL was not run against the server.
-- T2 and T3 not started.
+- The pages were verified through HTTP tests only; nobody looked at them in a browser, so layout, the toast and the select were not checked visually.
+- An inactive product's label in the select and its badge on `/Products` are not covered by a test: the seeded data was not checked for inactive products and the tests may not write.
+- Prices use the server's current culture for the decimal separator.
+- The branch is not pushed and has no pull request.
 
 ## Next step
 
-User step: apply the migration with `dotnet ef database update`. Then T2.
+All tasks are checked. The user decides on push and pull request; the four parallel agents can start from this branch.
