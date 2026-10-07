@@ -1,24 +1,96 @@
-@model IReadOnlyList<Product>
+@model ProductsIndexViewModel
 @{
     ViewData["Title"] = "Products";
-    ViewData["NotificationMessage"] = Model.Count switch
+
+    if (Model.Errors.Count > 0)
     {
-        0 => "No products to show.",
-        1 => "Showing 1 product.",
-        _ => $"Showing {Model.Count} products."
-    };
-    ViewData["NotificationType"] = "info";
+        ViewData["NotificationMessage"] = "The operation could not be completed.";
+        ViewData["NotificationType"] = "danger";
+    }
+    else if (Model.SuccessMessage is not null)
+    {
+        ViewData["NotificationMessage"] = Model.SuccessMessage;
+        ViewData["NotificationType"] = "success";
+    }
+    else
+    {
+        ViewData["NotificationMessage"] = Model.Products.Count switch
+        {
+            0 => "No products to show.",
+            1 => "Showing 1 product.",
+            _ => $"Showing {Model.Products.Count} products."
+        };
+        ViewData["NotificationType"] = "info";
+    }
 }
 
 <h1>Products</h1>
 
-@if (Model.Count == 0)
+@if (Model.Errors.Count > 0)
+{
+    <div class="alert alert-danger" role="alert">
+        <ul class="mb-0">
+            @foreach (var error in Model.Errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
+<h2 class="h4">New product</h2>
+<form asp-action="Create" method="post" class="row g-3 mb-4">
+    <input type="hidden" name="showInactive" value="@(Model.ShowInactive ? "true" : "false")" />
+    <div class="col-md-2">
+        <label for="Sku" class="form-label">SKU</label>
+        <input type="text" class="form-control" id="Sku" name="Sku" value="@Model.Form.Sku"
+               placeholder="SKU-00000" maxlength="9" required />
+    </div>
+    <div class="col-md-4">
+        <label for="Name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="Name" name="Name" value="@Model.Form.Name"
+               maxlength="200" required />
+    </div>
+    <div class="col-md-2">
+        <label for="Category" class="form-label">Category</label>
+        <input type="text" class="form-control" id="Category" name="Category" value="@Model.Form.Category"
+               maxlength="100" required />
+    </div>
+    <div class="col-md-2">
+        <label for="Price" class="form-label">Price</label>
+        <input type="number" class="form-control" id="Price" name="Price" value="@Model.Form.Price"
+               step="0.01" min="0.01" required />
+    </div>
+    <div class="col-md-2">
+        <label for="InitialStock" class="form-label">Initial stock</label>
+        <input type="number" class="form-control" id="InitialStock" name="InitialStock" value="@Model.Form.InitialStock"
+               step="1" min="0" required />
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Create product</button>
+    </div>
+</form>
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="showInactive" name="showInactive" value="true"
+               checked="@Model.ShowInactive" onchange="this.form.submit()" />
+        <label class="form-check-label" for="showInactive">Mostrar productos dados de baja</label>
+    </div>
+    <noscript>
+        <button type="submit" class="btn btn-secondary btn-sm mt-2">Apply</button>
+    </noscript>
+</form>
+
+@if (Model.Products.Count == 0)
 {
     <p class="text-muted">There are no products to show yet.</p>
 }
 else
 {
-    <div class="table-responsive">
+    @* One form for the whole table: each button sends the SKU of its own row. *@
+    <form asp-action="Deactivate" method="post" class="table-responsive">
+        <input type="hidden" name="showInactive" value="@(Model.ShowInactive ? "true" : "false")" />
         <table class="table table-striped table-hover align-middle">
             <caption class="visually-hidden">Products ordered by SKU</caption>
             <thead>
@@ -29,10 +101,11 @@ else
                     <th scope="col" class="text-end">Price</th>
                     <th scope="col" class="text-end">Stock</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var product in Model)
+                @foreach (var product in Model.Products)
                 {
                     <tr>
                         <td>@product.Sku</td>
@@ -50,9 +123,17 @@ else
                                 <span class="badge text-bg-secondary">Inactive</span>
                             }
                         </td>
+                        <td>
+                            @if (product.IsActive)
+                            {
+                                <button type="submit" name="sku" value="@product.Sku"
+                                        class="btn btn-outline-danger btn-sm"
+                                        aria-label="Dar de baja @product.Sku">Dar de baja</button>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
-    </div>
+    </form>
 }

@@ -13,7 +13,8 @@ namespace app_curso_claude.Controllers
 
             var model = new PurchasesIndexViewModel
             {
-                Products = await products.GetAllAsync(),
+                // Deactivated products keep their purchase history, so they stay in the select.
+                Products = await products.GetAllAsync(includeInactive: true),
                 RequestedSku = requestedSku,
                 SelectedProduct = selectedProduct,
                 Purchases = selectedProduct is null ? [] : await purchases.GetByProductAsync(selectedProduct.Id)
