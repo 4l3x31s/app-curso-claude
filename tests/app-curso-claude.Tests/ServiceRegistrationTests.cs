@@ -1,5 +1,6 @@
 using app_curso_claude.Data.Repositories;
 using app_curso_claude.Data.Repositories.EfCore;
+using app_curso_claude.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace app_curso_claude.Tests
@@ -16,6 +17,15 @@ namespace app_curso_claude.Tests
             Assert.IsType<EfProductRepository>(services.GetRequiredService<IProductRepository>());
             Assert.IsType<EfCustomerRepository>(services.GetRequiredService<ICustomerRepository>());
             Assert.IsType<EfPurchaseRepository>(services.GetRequiredService<IPurchaseRepository>());
+            Assert.IsType<EfContactRequestRepository>(services.GetRequiredService<IContactRequestRepository>());
+        }
+
+        [Fact]
+        public void Services_ContactRequestService_Resolves()
+        {
+            using var scope = factory.Services.CreateScope();
+
+            Assert.NotNull(scope.ServiceProvider.GetRequiredService<ContactRequestService>());
         }
 
         [Fact]

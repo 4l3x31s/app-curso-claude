@@ -1,8 +1,22 @@
-﻿@model ContactDetailsViewModel
+@model ContactPageViewModel
 @{
     ViewData["Title"] = "Contact details";
-    ViewData["NotificationMessage"] = "Showing our current contact details.";
-    ViewData["NotificationType"] = "info";
+
+    if (Model.Folio is not null)
+    {
+        ViewData["NotificationMessage"] = $"Request {Model.Folio} registered.";
+        ViewData["NotificationType"] = "success";
+    }
+    else if (Model.Errors.Count > 0)
+    {
+        ViewData["NotificationMessage"] = "The request could not be sent.";
+        ViewData["NotificationType"] = "danger";
+    }
+    else
+    {
+        ViewData["NotificationMessage"] = "Showing our current contact details.";
+        ViewData["NotificationType"] = "info";
+    }
 }
 <h1>@ViewData["Title"]</h1>
 
@@ -10,13 +24,56 @@
     <div class="card-body">
         <dl class="row mb-0">
             <dt class="col-sm-3">Email</dt>
-            <dd class="col-sm-9"><a href="mailto:@Model.Email">@Model.Email</a></dd>
+            <dd class="col-sm-9"><a href="mailto:@Model.Details.Email">@Model.Details.Email</a></dd>
 
             <dt class="col-sm-3">Phone</dt>
-            <dd class="col-sm-9"><a href="@Model.PhoneHref">@Model.Phone</a></dd>
+            <dd class="col-sm-9"><a href="@Model.Details.PhoneHref">@Model.Details.Phone</a></dd>
 
             <dt class="col-sm-3">Business hours</dt>
-            <dd class="col-sm-9 mb-0">@Model.BusinessHours</dd>
+            <dd class="col-sm-9 mb-0">@Model.Details.BusinessHours</dd>
         </dl>
     </div>
 </div>
+
+<h2 class="mt-4">Send us a request</h2>
+
+@if (Model.Folio is not null)
+{
+    <div class="alert alert-success" role="status">
+        Your request was registered with folio <strong>@Model.Folio</strong>.
+    </div>
+}
+
+@if (Model.Errors.Count > 0)
+{
+    <div class="alert alert-danger" role="alert">
+        <ul class="mb-0">
+            @foreach (var error in Model.Errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
+<form asp-controller="Contact" asp-action="Index" method="post">
+    <div class="mb-3">
+        <label asp-for="Form.Type" class="form-label">Type</label>
+        <select asp-for="Form.Type" asp-items="new SelectList(Model.RequestTypes)" class="form-select" required>
+            <option value="">Select a type</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Form.Sku" class="form-label">Product SKU (optional)</label>
+        <input asp-for="Form.Sku" class="form-control" maxlength="32" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Form.Email" class="form-label">Email</label>
+        <input asp-for="Form.Email" type="email" class="form-control" maxlength="256" autocomplete="email" required />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Form.Message" class="form-label">Message</label>
+        <textarea asp-for="Form.Message" class="form-control" rows="4" minlength="10" maxlength="500" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Send request</button>
+</form>

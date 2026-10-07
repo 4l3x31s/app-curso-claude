@@ -16,6 +16,8 @@ namespace app_curso_claude.Data
 
         public DbSet<Purchase> Purchases => Set<Purchase>();
 
+        public DbSet<ContactRequest> ContactRequests => Set<ContactRequest>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Customer>(entity =>
@@ -59,6 +61,18 @@ namespace app_curso_claude.Data
                     .WithMany(p => p.Purchases)
                     .HasForeignKey(p => p.ProductId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ContactRequest>(entity =>
+            {
+                entity.Property(r => r.Folio).HasMaxLength(20);
+                entity.Property(r => r.Type).HasMaxLength(20);
+                entity.Property(r => r.Sku).HasMaxLength(32);
+                entity.Property(r => r.Email).HasMaxLength(256);
+                entity.Property(r => r.Message).HasMaxLength(500);
+
+                // Two requests can never share a folio, even when they are sent at the same time.
+                entity.HasIndex(r => r.Folio).IsUnique();
             });
         }
     }
