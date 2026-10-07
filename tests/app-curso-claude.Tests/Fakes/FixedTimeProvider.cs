@@ -1,10 +1,12 @@
 namespace app_curso_claude.Tests.Fakes
 {
     /// <summary>
-    /// Clock that always returns the same instant.
+    /// Clock that returns the same instant until the test sets another one.
     /// </summary>
     public class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => now;
+        public DateTimeOffset Now { get; set; } = now;
+
+        public override DateTimeOffset GetUtcNow() => Now;
     }
 }

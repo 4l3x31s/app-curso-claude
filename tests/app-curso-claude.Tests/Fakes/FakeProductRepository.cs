@@ -73,6 +73,20 @@ namespace app_curso_claude.Tests.Fakes
         }
 
         /// <summary>
+        /// Creates a repository that knows only the given SKUs.
+        /// </summary>
+        public static FakeProductRepository WithSkus(params string[] skus)
+        {
+            var repository = new FakeProductRepository();
+            foreach (var sku in skus)
+            {
+                repository.Seed(sku);
+            }
+
+            return repository;
+        }
+
+        /// <summary>
         /// Adds a product that already exists before the test acts.
         /// </summary>
         public Product Seed(string sku, int stock = 0, bool isActive = true)

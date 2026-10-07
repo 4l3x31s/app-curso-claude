@@ -35,6 +35,8 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<PurchaseService>();
 builder.Services.AddScoped<SummaryService>();
+builder.Services.AddScoped<IContactRequestRepository, EfContactRequestRepository>();
+builder.Services.AddScoped<ContactRequestService>();
 
 var app = builder.Build();
 

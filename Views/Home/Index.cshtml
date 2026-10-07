@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using app_curso_claude.Services
 @model Summary
+@inject IConfiguration Configuration
 @{
     ViewData["Title"] = "Home";
     ViewData["NotificationMessage"] = "Welcome! Choose a section below to get started.";
@@ -76,15 +77,19 @@ else
 }
 
 <div class="row row-cols-1 row-cols-md-2 g-4">
-    <div class="col">
-        <div class="card h-100">
-            <div class="card-body d-flex flex-column">
-                <h2 class="card-title h5">Contact details</h2>
-                <p class="card-text">See the name, email, and phone number on file.</p>
-                <a class="btn btn-primary mt-auto align-self-start" asp-controller="Contact" asp-action="Index">View contact details</a>
+    @* While the flag is off the page answers 404, so the card would be a dead link. *@
+    @if (Configuration.GetValue<bool>(FeatureFlags.Contact))
+    {
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h2 class="card-title h5">Contact details</h2>
+                    <p class="card-text">See the name, email, and phone number on file.</p>
+                    <a class="btn btn-primary mt-auto align-self-start" asp-controller="Contact" asp-action="Index">View contact details</a>
+                </div>
             </div>
         </div>
-    </div>
+    }
     <div class="col">
         <div class="card h-100">
             <div class="card-body d-flex flex-column">
