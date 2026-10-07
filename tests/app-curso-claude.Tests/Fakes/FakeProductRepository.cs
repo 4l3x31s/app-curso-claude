@@ -5,42 +5,71 @@ namespace app_curso_claude.Tests.Fakes
 {
     /// <summary>
     /// Keeps the products in a list, so the tests that use it never reach SQL Server.
+    /// Reads return copies, as a real repository returns untracked rows, and every call
+    /// takes <see cref="Latency"/> so simultaneous callers overlap.
     /// </summary>
-    public class FakeProductRepository : IProductRepository
+    public sealed class FakeProductRepository(params Product[] products) : IProductRepository
     {
-        public List<Product> Products { get; } = [];
+        /// <summary>Products stored so far, in the order they were added.</summary>
+        public List<Product> Products { get; } = [.. products];
 
-        public Task<IReadOnlyList<Product>> GetAllAsync(bool includeInactive)
+        /// <summary>Time every call takes, as a round trip to a database would.</summary>
+        public TimeSpan Latency { get; init; }
+
+        /// <summary>Number of times the stock was written.</summary>
+        public int StockUpdates { get; private set; }
+
+        public int StockOf(string sku)
         {
-            IReadOnlyList<Product> result = Products
+            return Products.First(p => p.Sku == sku).Stock;
+        }
+
+        public async Task<IReadOnlyList<Product>> GetAllAsync(bool includeInactive)
+        {
+            await Task.Delay(Latency);
+
+            return Products
                 .Where(p => includeInactive || p.IsActive)
                 .OrderBy(p => p.Sku, StringComparer.Ordinal)
+                .Select(Copy)
                 .ToList();
-
-            return Task.FromResult(result);
         }
 
-        public Task<Product?> GetAsync(string sku)
+        public async Task<Product?> GetAsync(string sku)
         {
-            return Task.FromResult(Products.FirstOrDefault(p => p.Sku == sku));
+            await Task.Delay(Latency);
+
+            var product = Products.FirstOrDefault(p => p.Sku == sku);
+            return product is null ? null : Copy(product);
         }
 
-        public Task AddAsync(Product product)
+        public async Task AddAsync(Product product)
         {
+            await Task.Delay(Latency);
+
             Products.Add(product);
-            return Task.CompletedTask;
         }
 
-        public Task<bool> DeactivateAsync(string sku)
+        public async Task<bool> DeactivateAsync(string sku)
         {
+            await Task.Delay(Latency);
+
             var product = Products.FirstOrDefault(p => p.Sku == sku && p.IsActive);
             if (product is null)
             {
-                return Task.FromResult(false);
+                return false;
             }
 
             product.IsActive = false;
-            return Task.FromResult(true);
+            return true;
+        }
+
+        public async Task UpdateStockAsync(string sku, int newStock)
+        {
+            await Task.Delay(Latency);
+
+            Products.First(p => p.Sku == sku).Stock = newStock;
+            StockUpdates++;
         }
 
         /// <summary>
@@ -61,6 +90,22 @@ namespace app_curso_claude.Tests.Fakes
             };
             Products.Add(product);
             return product;
+        }
+
+        private static Product Copy(Product product)
+        {
+            return new Product
+            {
+                Id = product.Id,
+                Sku = product.Sku,
+                Name = product.Name,
+                Description = product.Description,
+                Category = product.Category,
+                Price = product.Price,
+                Stock = product.Stock,
+                CreatedAt = product.CreatedAt,
+                IsActive = product.IsActive
+            };
         }
     }
 }

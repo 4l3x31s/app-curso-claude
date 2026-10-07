@@ -20,6 +20,28 @@ namespace app_curso_claude.Tests
         }
 
         [Fact]
+        public void Services_UnitOfWork_ResolvesToItsEfCoreImplementation()
+        {
+            using var scope = factory.Services.CreateScope();
+
+            Assert.IsType<EfUnitOfWork>(scope.ServiceProvider.GetRequiredService<IUnitOfWork>());
+        }
+
+        [Fact]
+        public void Services_PurchaseService_IsScoped()
+        {
+            using var firstScope = factory.Services.CreateScope();
+            using var secondScope = factory.Services.CreateScope();
+
+            var first = firstScope.ServiceProvider.GetRequiredService<PurchaseService>();
+            var sameScope = firstScope.ServiceProvider.GetRequiredService<PurchaseService>();
+            var second = secondScope.ServiceProvider.GetRequiredService<PurchaseService>();
+
+            Assert.Same(first, sameScope);
+            Assert.NotSame(first, second);
+        }
+
+        [Fact]
         public void Services_Repositories_AreScoped()
         {
             using var firstScope = factory.Services.CreateScope();

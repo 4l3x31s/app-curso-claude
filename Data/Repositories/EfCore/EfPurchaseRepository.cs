@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace app_curso_claude.Data.Repositories.EfCore
 {
     /// <summary>
-    /// Reads the purchases from SQL Server through <see cref="AppDbContext"/>.
+    /// Reads and saves the purchases in SQL Server through <see cref="AppDbContext"/>.
     /// </summary>
     public class EfPurchaseRepository(AppDbContext context) : IPurchaseRepository
     {
@@ -19,6 +19,15 @@ namespace app_curso_claude.Data.Repositories.EfCore
                 // The id breaks ties so purchases made at the same instant keep a stable order.
                 .ThenByDescending(p => p.Id)
                 .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<int> AddAsync(Purchase purchase)
+        {
+            context.Purchases.Add(purchase);
+            await context.SaveChangesAsync();
+
+            return purchase.Id;
         }
     }
 }

@@ -30,8 +30,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IProductRepository, EfProductRepository>();
 builder.Services.AddScoped<ICustomerRepository, EfCustomerRepository>();
 builder.Services.AddScoped<IPurchaseRepository, EfPurchaseRepository>();
+builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<PurchaseService>();
 
 var app = builder.Build();
 

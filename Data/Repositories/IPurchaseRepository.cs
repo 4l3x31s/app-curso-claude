@@ -3,7 +3,7 @@ using app_curso_claude.Models;
 namespace app_curso_claude.Data.Repositories
 {
     /// <summary>
-    /// Read access to the purchases.
+    /// Access to the purchases.
     /// </summary>
     public interface IPurchaseRepository
     {
@@ -12,5 +12,11 @@ namespace app_curso_claude.Data.Repositories
         /// </summary>
         /// <param name="productId">Id of the product whose purchases are returned.</param>
         Task<IReadOnlyList<Purchase>> GetByProductAsync(int productId);
+
+        /// <summary>
+        /// Saves a new purchase and returns the id assigned to it.
+        /// </summary>
+        /// <param name="purchase">Purchase to save; its customer and product are given by their ids.</param>
+        Task<int> AddAsync(Purchase purchase);
     }
 }
