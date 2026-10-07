@@ -1,5 +1,6 @@
 using app_curso_claude.Data.Repositories;
 using app_curso_claude.Data.Repositories.EfCore;
+using app_curso_claude.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace app_curso_claude.Tests
@@ -30,6 +31,14 @@ namespace app_curso_claude.Tests
 
             Assert.Same(first, sameScope);
             Assert.NotSame(first, second);
+        }
+
+        [Fact]
+        public void Services_SummaryService_ResolvesInsideAScope()
+        {
+            using var scope = factory.Services.CreateScope();
+
+            Assert.NotNull(scope.ServiceProvider.GetRequiredService<SummaryService>());
         }
 
         [Fact]

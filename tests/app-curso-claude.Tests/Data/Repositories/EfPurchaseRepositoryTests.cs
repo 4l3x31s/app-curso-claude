@@ -54,5 +54,51 @@ namespace app_curso_claude.Tests.Data.Repositories
 
             Assert.Empty(purchases);
         }
+
+        [Fact]
+        public async Task GetLatestAsync_SeveralPurchases_ReturnsTheNewestOfAllProductsInOrder()
+        {
+            const int count = 5;
+            using var scope = factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var repository = scope.ServiceProvider.GetRequiredService<IPurchaseRepository>();
+            var expectedIds = await context.Purchases
+                .OrderByDescending(p => p.PurchasedAt)
+                .ThenByDescending(p => p.Id)
+                .Select(p => p.Id)
+                .Take(count)
+                .ToListAsync();
+
+            var purchases = await repository.GetLatestAsync(count);
+
+            Assert.NotEmpty(purchases);
+            Assert.Equal(expectedIds, purchases.Select(p => p.Id));
+        }
+
+        [Fact]
+        public async Task GetLatestAsync_SeveralPurchases_LoadsEachCustomerAndProduct()
+        {
+            using var scope = factory.Services.CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IPurchaseRepository>();
+
+            var purchases = await repository.GetLatestAsync(5);
+
+            Assert.NotEmpty(purchases);
+            Assert.All(purchases, p => Assert.Equal(p.CustomerId, p.Customer?.Id));
+            Assert.All(purchases, p => Assert.Equal(p.ProductId, p.Product?.Id));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task GetLatestAsync_CountNotPositive_ReturnsEmptyList(int count)
+        {
+            using var scope = factory.Services.CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IPurchaseRepository>();
+
+            var purchases = await repository.GetLatestAsync(count);
+
+            Assert.Empty(purchases);
+        }
     }
 }

@@ -20,5 +20,24 @@ namespace app_curso_claude.Data.Repositories.EfCore
                 .ThenByDescending(p => p.Id)
                 .ToListAsync();
         }
+
+        /// <inheritdoc />
+        public async Task<IReadOnlyList<Purchase>> GetLatestAsync(int count)
+        {
+            if (count <= 0)
+            {
+                return [];
+            }
+
+            return await context.Purchases
+                .AsNoTracking()
+                .Include(p => p.Customer)
+                .Include(p => p.Product)
+                .OrderByDescending(p => p.PurchasedAt)
+                // The id breaks ties so purchases made at the same instant keep a stable order.
+                .ThenByDescending(p => p.Id)
+                .Take(count)
+                .ToListAsync();
+        }
     }
 }
