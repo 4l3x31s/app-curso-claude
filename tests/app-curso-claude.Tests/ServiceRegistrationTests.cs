@@ -1,0 +1,43 @@
+using app_curso_claude.Data.Repositories;
+using app_curso_claude.Data.Repositories.EfCore;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace app_curso_claude.Tests
+{
+    [Collection(AppCollection.Name)]
+    public class ServiceRegistrationTests(AppFactory factory)
+    {
+        [Fact]
+        public void Services_Repositories_ResolveToTheirEfCoreImplementations()
+        {
+            using var scope = factory.Services.CreateScope();
+            var services = scope.ServiceProvider;
+
+            Assert.IsType<EfProductRepository>(services.GetRequiredService<IProductRepository>());
+            Assert.IsType<EfCustomerRepository>(services.GetRequiredService<ICustomerRepository>());
+            Assert.IsType<EfPurchaseRepository>(services.GetRequiredService<IPurchaseRepository>());
+        }
+
+        [Fact]
+        public void Services_Repositories_AreScoped()
+        {
+            using var firstScope = factory.Services.CreateScope();
+            using var secondScope = factory.Services.CreateScope();
+
+            var first = firstScope.ServiceProvider.GetRequiredService<IProductRepository>();
+            var sameScope = firstScope.ServiceProvider.GetRequiredService<IProductRepository>();
+            var second = secondScope.ServiceProvider.GetRequiredService<IProductRepository>();
+
+            Assert.Same(first, sameScope);
+            Assert.NotSame(first, second);
+        }
+
+        [Fact]
+        public void Services_TimeProvider_ResolvesToTheSystemClock()
+        {
+            var timeProvider = factory.Services.GetRequiredService<TimeProvider>();
+
+            Assert.Same(TimeProvider.System, timeProvider);
+        }
+    }
+}
