@@ -1,5 +1,6 @@
 using app_curso_claude.Data;
 using app_curso_claude.Data.Repositories;
+using app_curso_claude.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -53,6 +54,36 @@ namespace app_curso_claude.Tests.Data.Repositories
             var purchases = await repository.GetByProductAsync(-1);
 
             Assert.Empty(purchases);
+        }
+
+        [Fact]
+        public async Task AddAsync_NewPurchase_SavesItAndReturnsItsAssignedId()
+        {
+            using var scope = factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var repository = scope.ServiceProvider.GetRequiredService<IPurchaseRepository>();
+            var customerId = await context.Customers.OrderBy(c => c.Id).Select(c => c.Id).FirstAsync();
+            var product = await context.Products.AsNoTracking().OrderBy(p => p.Sku).FirstAsync();
+            var purchasedAt = new DateTime(2026, 10, 6, 15, 30, 0, DateTimeKind.Utc);
+
+            // Never committed: disposing the transaction rolls the new purchase back.
+            await using var transaction = await context.Database.BeginTransactionAsync();
+
+            var id = await repository.AddAsync(new Purchase
+            {
+                CustomerId = customerId,
+                ProductId = product.Id,
+                Quantity = 2,
+                UnitPrice = product.Price,
+                PurchasedAt = purchasedAt
+            });
+
+            Assert.True(id > 0);
+            var saved = (await repository.GetByProductAsync(product.Id)).Single(p => p.Id == id);
+            Assert.Equal(customerId, saved.CustomerId);
+            Assert.Equal(2, saved.Quantity);
+            Assert.Equal(product.Price, saved.UnitPrice);
+            Assert.Equal(purchasedAt, saved.PurchasedAt);
         }
     }
 }

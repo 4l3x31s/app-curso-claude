@@ -3,7 +3,7 @@ using app_curso_claude.Models;
 namespace app_curso_claude.Data.Repositories
 {
     /// <summary>
-    /// Read access to the products.
+    /// Access to the products.
     /// </summary>
     public interface IProductRepository
     {
@@ -17,5 +17,13 @@ namespace app_curso_claude.Data.Repositories
         /// </summary>
         /// <param name="sku">SKU to look for.</param>
         Task<Product?> GetAsync(string sku);
+
+        /// <summary>
+        /// Replaces the stock of the product with the given SKU.
+        /// </summary>
+        /// <param name="sku">SKU of the product to update.</param>
+        /// <param name="newStock">Stock the product is left with.</param>
+        /// <exception cref="InvalidOperationException">No product has that SKU.</exception>
+        Task UpdateStockAsync(string sku, int newStock);
     }
 }

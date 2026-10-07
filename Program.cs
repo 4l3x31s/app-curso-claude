@@ -1,6 +1,7 @@
 using app_curso_claude.Data;
 using app_curso_claude.Data.Repositories;
 using app_curso_claude.Data.Repositories.EfCore;
+using app_curso_claude.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,7 +30,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IProductRepository, EfProductRepository>();
 builder.Services.AddScoped<ICustomerRepository, EfCustomerRepository>();
 builder.Services.AddScoped<IPurchaseRepository, EfPurchaseRepository>();
+builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<PurchaseService>();
 
 var app = builder.Build();
 

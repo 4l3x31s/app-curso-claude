@@ -1,5 +1,6 @@
 using app_curso_claude.Data.Repositories;
 using app_curso_claude.Data.Repositories.EfCore;
+using app_curso_claude.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace app_curso_claude.Tests
@@ -16,6 +17,28 @@ namespace app_curso_claude.Tests
             Assert.IsType<EfProductRepository>(services.GetRequiredService<IProductRepository>());
             Assert.IsType<EfCustomerRepository>(services.GetRequiredService<ICustomerRepository>());
             Assert.IsType<EfPurchaseRepository>(services.GetRequiredService<IPurchaseRepository>());
+        }
+
+        [Fact]
+        public void Services_UnitOfWork_ResolvesToItsEfCoreImplementation()
+        {
+            using var scope = factory.Services.CreateScope();
+
+            Assert.IsType<EfUnitOfWork>(scope.ServiceProvider.GetRequiredService<IUnitOfWork>());
+        }
+
+        [Fact]
+        public void Services_PurchaseService_IsScoped()
+        {
+            using var firstScope = factory.Services.CreateScope();
+            using var secondScope = factory.Services.CreateScope();
+
+            var first = firstScope.ServiceProvider.GetRequiredService<PurchaseService>();
+            var sameScope = firstScope.ServiceProvider.GetRequiredService<PurchaseService>();
+            var second = secondScope.ServiceProvider.GetRequiredService<PurchaseService>();
+
+            Assert.Same(first, sameScope);
+            Assert.NotSame(first, second);
         }
 
         [Fact]

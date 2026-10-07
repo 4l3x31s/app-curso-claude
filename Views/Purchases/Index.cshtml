@@ -3,8 +3,19 @@
     ViewData["Title"] = "Purchases";
 
     var unknownSku = Model.RequestedSku is not null && Model.SelectedProduct is null;
+    var registeredMessage = TempData[app_curso_claude.Controllers.PurchasesController.RegisteredMessageKey] as string;
 
-    if (unknownSku)
+    if (Model.Errors.Count > 0)
+    {
+        ViewData["NotificationMessage"] = "The purchase could not be registered.";
+        ViewData["NotificationType"] = "danger";
+    }
+    else if (registeredMessage is not null)
+    {
+        ViewData["NotificationMessage"] = registeredMessage;
+        ViewData["NotificationType"] = "success";
+    }
+    else if (unknownSku)
     {
         ViewData["NotificationMessage"] = $"No product found with SKU {Model.RequestedSku}.";
         ViewData["NotificationType"] = "warning";
@@ -41,40 +52,91 @@
     </div>
 </form>
 
+@if (Model.Errors.Count > 0)
+{
+    <div class="alert alert-danger" role="alert">
+        <p class="mb-1">The purchase could not be registered:</p>
+        <ul class="mb-0">
+            @foreach (var error in Model.Errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
 @if (unknownSku)
 {
     <p class="text-muted">No product found with SKU @Model.RequestedSku.</p>
-}
-else if (Model.SelectedProduct is not null && Model.Purchases.Count == 0)
-{
-    <p class="text-muted">This product has no purchases yet.</p>
 }
 else if (Model.SelectedProduct is not null)
 {
     <h2 class="h5">@Model.SelectedProduct.Sku - @Model.SelectedProduct.Name</h2>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle">
-            <caption class="visually-hidden">Purchases of the selected product, newest first</caption>
-            <thead>
-                <tr>
-                    <th scope="col">Date</th>
-                    <th scope="col">Customer</th>
-                    <th scope="col" class="text-end">Quantity</th>
-                    <th scope="col" class="text-end">Unit price</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var purchase in Model.Purchases)
-                {
-                    <tr data-purchase-id="@purchase.Id">
-                        <td>@purchase.PurchasedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>@purchase.Customer.FirstName @purchase.Customer.LastName</td>
-                        <td class="text-end">@purchase.Quantity</td>
-                        <td class="text-end">@purchase.UnitPrice.ToString("F2")</td>
+    <p>Current stock: <strong data-product-stock="@Model.SelectedProduct.Stock">@Model.SelectedProduct.Stock</strong></p>
+
+    @if (Model.SelectedProduct.IsActive)
+    {
+        <form asp-controller="Purchases" asp-action="Register" method="post" class="row g-2 align-items-end mb-4">
+            <input type="hidden" name="sku" value="@Model.SelectedProduct.Sku" />
+            <div class="col-md-5">
+                <label for="customerId" class="form-label">Customer</label>
+                <select id="customerId" name="customerId" class="form-select" required>
+                    <option value="">Select a customer</option>
+                    @foreach (var customer in Model.Customers)
+                    {
+                        <option value="@customer.Id" selected="@(customer.Id == Model.CustomerId)">
+                            @customer.FirstName @customer.LastName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="quantity" class="form-label">Quantity</label>
+                <input id="quantity" name="quantity" type="number" class="form-control" required step="1"
+                       min="@app_curso_claude.Services.PurchaseService.MinQuantity"
+                       max="@app_curso_claude.Services.PurchaseService.MaxQuantity"
+                       value="@Model.Quantity" />
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-success">Register purchase</button>
+            </div>
+        </form>
+    }
+    else
+    {
+        <p class="text-muted">This product is inactive and cannot be purchased.</p>
+    }
+
+    @if (Model.Purchases.Count == 0)
+    {
+        <p class="text-muted">This product has no purchases yet.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <caption class="visually-hidden">Purchases of the selected product, newest first</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Customer</th>
+                        <th scope="col" class="text-end">Quantity</th>
+                        <th scope="col" class="text-end">Unit price</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var purchase in Model.Purchases)
+                    {
+                        <tr data-purchase-id="@purchase.Id">
+                            <td>@purchase.PurchasedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@purchase.Customer.FirstName @purchase.Customer.LastName</td>
+                            <td class="text-end">@purchase.Quantity</td>
+                            <td class="text-end">@purchase.UnitPrice.ToString("F2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 }

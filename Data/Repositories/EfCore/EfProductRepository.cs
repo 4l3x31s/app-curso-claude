@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace app_curso_claude.Data.Repositories.EfCore
 {
     /// <summary>
-    /// Reads the products from SQL Server through <see cref="AppDbContext"/>.
+    /// Reads and updates the products in SQL Server through <see cref="AppDbContext"/>.
     /// </summary>
     public class EfProductRepository(AppDbContext context) : IProductRepository
     {
@@ -23,6 +23,19 @@ namespace app_curso_claude.Data.Repositories.EfCore
             return await context.Products
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Sku == sku);
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateStockAsync(string sku, int newStock)
+        {
+            var updatedRows = await context.Products
+                .Where(p => p.Sku == sku)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(p => p.Stock, newStock));
+
+            if (updatedRows == 0)
+            {
+                throw new InvalidOperationException($"No product found with SKU {sku}.");
+            }
         }
     }
 }
