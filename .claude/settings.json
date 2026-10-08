@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pwsh -File ./.claude/hooks/gate.ps1"
+            "command": "pwsh -File .claude/hooks/gate.ps1"
           }
         ]
       }
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pwsh -File ./.claude/hooks/gate.ps1"
+            "command": "pwsh -File .claude/hooks/gate.ps1"
           }
         ]
       }

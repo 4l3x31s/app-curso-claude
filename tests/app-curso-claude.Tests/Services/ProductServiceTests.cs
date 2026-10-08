@@ -70,6 +70,16 @@ namespace app_curso_claude.Tests.Services
             AssertSingleError("SKU must have the format SKU-00000.", result);
         }
 
+        [Fact]
+        public async Task CreateWithNameWithoutLetters_IsRejected()
+        {
+            var result = await service.CreateAsync("SKU-12345", "12345", "Peripherals", 19.99m, 7);
+
+            Assert.False(result.Success);
+            Assert.NotEmpty(result.Errors);
+            Assert.Empty(repository.Products);
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(2)]
