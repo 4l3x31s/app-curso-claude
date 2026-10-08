@@ -8,11 +8,17 @@
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
+      "Bash(git merge-tree *)",
       "Bash(git add *)",
       "Bash(git commit *)"
     ],
     "deny": [
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git reset --hard *)",
+      "Bash(git checkout --ours *)",
+      "Bash(git checkout --theirs *)",
+      "Bash(git restore --ours *)",
+      "Bash(git restore --theirs *)"
     ]
   },
   "hooks": {

@@ -486,3 +486,7 @@ $RECYCLE.BIN/
 
 # Agent worktrees
 .claude/worktrees/
+
+#contenido_extra
+contenido_curso/
+/contenido_curso/
